@@ -9,11 +9,16 @@
     "prisma:generate": "prisma generate"
   },
   "dependencies": {
+    "@hono/graphql-server": "^0.5.1",
     "@prisma/client": "^5.22.0",
     "@supabase/supabase-js": "^2.46.1",
     "bcryptjs": "^2.4.3",
+    "graphql": "^16.9.0",
+    "graphql-tag": "^2.12.6",
     "hono": "^4.6.10",
-    "prisma": "^5.22.0"
+    "jose": "^5.9.6",
+    "prisma": "^5.22.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241022.0",
@@ -25,9 +30,11 @@
     "prettier": "^3.3.3",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
+    "typescript-eslint": "^8.15.0",
     "wrangler": "^3.83.0"
   },
   "prisma": {
-    "seed": "prisma/seed.ts"
+    "seed": "src/prisma/seed.ts",
+    "schema": "src/prisma/schema.prisma"
   }
 }

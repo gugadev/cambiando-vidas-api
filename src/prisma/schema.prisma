@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model breeds {
+  id         BigInt    @id @default(autoincrement())
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  name       String    @unique
+  cases      cases[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cases {
+  id                            BigInt         @id @default(autoincrement())
+  created_at                    DateTime       @default(now()) @db.Timestamptz(6)
+  upated_at                     DateTime?      @db.Timestamptz(6)
+  updated_by                    DateTime?      @db.Timestamptz(6)
+  updated_reason                String?
+  rescuer_id                    BigInt
+  adopter_id                    BigInt?
+  breed_id                      BigInt
+  name                          String
+  age_years                     BigInt
+  age_months                    BigInt
+  about                         String
+  observations                  String?
+  status                        String
+  vaccines                      BigInt[]
+  castrated                     Boolean        @default(false)
+  adopter                       users?         @relation("cases_adopter_idTousers", fields: [adopter_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  breeds                        breeds         @relation(fields: [breed_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rescuer                       users          @relation("cases_rescuer_idTousers", fields: [rescuer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  cases_photos                  cases_photos[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cases_photos {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  case_id    BigInt
+  photo_url  String
+  cases      cases    @relation(fields: [case_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model roles {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  name       String   @unique
+  users      users[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model users {
+  id                            BigInt    @id @default(autoincrement())
+  created_at                    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                    DateTime? @db.Timestamptz(6)
+  role_id                       BigInt
+  name                          String
+  ruc                           String?
+  email                         String    @unique
+  password                      String
+  about                         String?
+  photo_url                     String?
+  is_organization               Boolean   @default(false)
+  phone                         String?
+  adoptions                     cases[]   @relation("cases_adopter_idTousers")
+  rescues                       cases[]   @relation("cases_rescuer_idTousers")
+  roles                         roles     @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model vaccines {
+  id         BigInt    @id @default(autoincrement())
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  name       String    @unique
+}
