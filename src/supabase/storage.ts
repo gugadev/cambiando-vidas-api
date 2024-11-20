@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+import { nanoid } from "nanoid";
 import { supabase } from "./client";
 
 type UploadedFile = {
@@ -12,7 +12,7 @@ const uploadImageToSupabase = async (
     file: File
 ): Promise<[Nullable<UploadedFile>, Nullable<Error>]> => {
     const [originalFilename, ext] = file.name.split(".");
-    let newFilename = `${originalFilename}-${crypto.randomUUID()}`;
+    let newFilename = `${originalFilename}-${nanoid()}`;
     if (ext) {
         newFilename += `.${ext}`;
     } else {
