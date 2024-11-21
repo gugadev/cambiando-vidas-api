@@ -1,5 +1,5 @@
 import { hashPassword } from "../libs/security";
-import { environment } from "../infra/environment";
+import { env } from "../infra/env";
 import { prisma } from "../prisma/client";
 import { UpdateProfileDto, CreateUserDTO } from "../types/users";
 import { users } from "@prisma/client";
@@ -8,11 +8,6 @@ async function createUser(
     dto: CreateUserDTO
 ): Promise<[Nullable<users>, Nullable<Error>]> {
     try {
-        const bucketPath = [
-            environment.supabaseProject,
-            "storage/v1/object/public",
-            environment.supabaseProfileImagesBucket,
-        ].join("/");
         const user = await prisma.users.create({
             data: {
                 name: dto.name,
@@ -21,7 +16,7 @@ async function createUser(
                 is_organization: dto.isOrganization ?? false,
                 role_id: dto.role,
                 password: hashPassword(dto.password),
-                photo_url: `${bucketPath}/default-avatar.jpg?t=2024-10-22T02%3A24%3A28.852Z`,
+                photo_url: `${env.supabaseProfileImagesBucket}/default-avatar.jpg?t=2024-10-22T02%3A24%3A28.852Z`,
             },
         });
         return [user, null];

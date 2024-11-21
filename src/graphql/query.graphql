@@ -1,4 +1,0 @@
-type Query {
-    me(token: String!): User
-    getUserById(id: Int!): User
-}

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 import { graphqlServer } from "@hono/graphql-server";
+import { serve } from "@hono/node-server";
 import { users } from "@prisma/client";
 import {
     usersRouter,
@@ -9,19 +10,25 @@ import {
     rolesRouter,
     breedsRouter,
     vaccinesRouter,
+    authRouter,
 } from "./routes";
 import { authMiddleware } from "./middlewares/auth";
 import { schema, rootResolver } from "./graphql";
+import { env } from "./infra/env";
+
+// @ts-expect-error BigInt is not defined in the global scope
+BigInt.prototype.toJSON = function () {
+    const int = Number.parseInt(this.toString());
+    return int ?? this.toString();
+};
 
 // Pass the generics to the Hono instance to type set / get
 const app = new Hono<{ Variables: { user: users } }>();
-const users = usersRouter;
-const cases = casesRouter;
-const roles = rolesRouter;
-const breeds = breedsRouter;
-const vaccines = vaccinesRouter;
+
+console.log("Env Vars:", env);
 
 app.use(logger());
+app.use(authMiddleware);
 app.use(
     "*",
     cors({
@@ -40,15 +47,19 @@ app.use(
         graphiql: true,
     })
 );
-app.use(authMiddleware);
 
 app.get("/", (c) => {
     return c.text("Hmmm... Who are you?");
 });
-app.route("/users", users);
-app.route("/cases", cases);
-app.route("/roles", roles);
-app.route("/breeds", breeds);
-app.route("/vaccines", vaccines);
+app.route("/api/v1/users", usersRouter);
+app.route("/api/v1/cases", casesRouter);
+app.route("/api/v1/roles", rolesRouter);
+app.route("/api/v1/breeds", breedsRouter);
+app.route("/api/v1/vaccines", vaccinesRouter);
+app.route("/api/v1/auth", authRouter);
 
-export default app;
+// export default app;
+serve({
+    fetch: app.fetch,
+    port: 3001,
+});

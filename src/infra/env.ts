@@ -1,4 +1,4 @@
-const environment = {
+const env = {
     database: process.env.DATABASE_URL,
     databaseDirect: process.env.DIRECT_URL,
     supabaseProject: process.env.SUPABASE_URL,
@@ -8,4 +8,4 @@ const environment = {
     tokenSecret: process.env.TOKEN_SECRET,
 };
 
-export { environment };
+export { env };

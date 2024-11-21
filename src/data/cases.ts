@@ -1,4 +1,4 @@
-import { environment } from "../infra/environment";
+import { env } from "../infra/env";
 import { uploadImageToSupabase } from "../supabase/storage";
 import { prisma } from "../prisma/client";
 import { CreateCaseDto } from "../types/cases";
@@ -49,7 +49,7 @@ const createCase = async (
         // 2. Upload the photos to the cloud (supabase)
         for (const photo of data.photos) {
             const [uploadedPhoto, error] = await uploadImageToSupabase(
-                environment.supabaseCasesImagesBucket,
+                env.supabaseCasesImagesBucket,
                 photo
             );
             if (error) {

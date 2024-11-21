@@ -2,6 +2,12 @@ import { createMiddleware } from "hono/factory";
 import { checkToken, decodeToken } from "../libs/security";
 
 const authMiddleware = createMiddleware(async (c, next) => {
+    if (
+        c.req.path === "/api/v1/auth/login" ||
+        c.req.path === "/api/v1/auth/signup"
+    ) {
+        return await next();
+    }
     const token = c.req.header("Authorization");
     if (!token) {
         return c.text("Unauthorized", 401);
@@ -12,7 +18,7 @@ const authMiddleware = createMiddleware(async (c, next) => {
     }
     const user = await decodeToken(token);
     c.set("user", user);
-    next();
+    await next();
 });
 
 export { authMiddleware };

@@ -2,7 +2,7 @@ import { SignJWT, decodeJwt, jwtVerify } from "jose";
 import { hashSync, compareSync } from "bcryptjs";
 import type { users } from "@prisma/client";
 // import { logger } from "@/lib/logger";
-import { environment } from "../infra/environment";
+import { env } from "../infra/env";
 
 async function createToken(user: users) {
     // tricky to allow us set the password in null
@@ -10,9 +10,7 @@ async function createToken(user: users) {
     const signer = new SignJWT(user)
         .setExpirationTime("1 day")
         .setProtectedHeader({ alg: "HS256", typ: "JWT" });
-    const token = await signer.sign(
-        new TextEncoder().encode(environment.tokenSecret)
-    );
+    const token = await signer.sign(new TextEncoder().encode(env.tokenSecret));
     //   logger.info(`Token created for user "${user.email}":`, token);
     return token;
 }
@@ -25,10 +23,7 @@ async function decodeToken(token: string): Promise<users> {
 
 async function checkToken(token: string): Promise<boolean> {
     try {
-        await jwtVerify(
-            token,
-            new TextEncoder().encode(environment.tokenSecret)
-        );
+        await jwtVerify(token, new TextEncoder().encode(env.tokenSecret));
         return true;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
