@@ -6,8 +6,6 @@ interface CreateCaseDto {
     story: string;
     castrated: boolean;
     observations: string | null;
-    rescuerId: number; // debería sacarlo del token?
-    photos: File[];
     vaccines: [];
 }
 

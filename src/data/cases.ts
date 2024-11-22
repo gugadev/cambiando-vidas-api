@@ -4,7 +4,7 @@ import { prisma } from "../prisma/client";
 import { CreateCaseDto } from "../types/cases";
 import { cases } from "@prisma/client";
 
-const getAllCases = () => {
+function getAllCases() {
     return prisma.cases.findMany({
         include: {
             cases_photos: true,
@@ -12,9 +12,9 @@ const getAllCases = () => {
             rescuer: true,
         },
     });
-};
+}
 
-const getCaseDetail = (id: number) => {
+function getCaseDetail(id: number) {
     return prisma.cases.findUnique({
         where: {
             id,
@@ -25,13 +25,12 @@ const getCaseDetail = (id: number) => {
             rescuer: true,
         },
     });
-};
+}
 
-const createCase = async (
-    data: CreateCaseDto
-): Promise<[Nullable<cases>, Nullable<Error>]> => {
+async function createCase(
+    data: CreateCaseDto & { rescuerId: number }
+): Promise<[Nullable<cases>, Nullable<Error>]> {
     try {
-        // 1. Register the case in the database
         const newCase = await prisma.cases.create({
             data: {
                 name: data.name,
@@ -46,22 +45,7 @@ const createCase = async (
                 status: "PENDING",
             },
         });
-        // 2. Upload the photos to the cloud (supabase)
-        for (const photo of data.photos) {
-            const [uploadedPhoto, error] = await uploadImageToSupabase(
-                env.supabaseCasesImagesBucket,
-                photo
-            );
-            if (error) {
-                throw new Error(error.message);
-            }
-            await prisma.cases_photos.create({
-                data: {
-                    case_id: newCase.id,
-                    photo_url: uploadedPhoto!.fullPath,
-                },
-            });
-        }
+
         const createdCase = await prisma.cases.findUnique({
             where: {
                 id: newCase.id,
@@ -76,6 +60,24 @@ const createCase = async (
     } catch (error) {
         return [null, error as Error];
     }
-};
+}
 
-export { createCase, getCaseDetail, getAllCases };
+async function addPhotoToCase(caseId: number, photos: File[]) {
+    for (const photo of photos) {
+        const [uploadedPhoto, error] = await uploadImageToSupabase(
+            env.supabaseCasesImagesBucket,
+            photo
+        );
+        if (error) {
+            throw new Error(error.message);
+        }
+        await prisma.cases_photos.create({
+            data: {
+                case_id: caseId,
+                photo_url: uploadedPhoto!.fullPath,
+            },
+        });
+    }
+}
+
+export { createCase, getCaseDetail, getAllCases, addPhotoToCase };

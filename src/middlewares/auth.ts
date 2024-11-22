@@ -4,7 +4,8 @@ import { checkToken, decodeToken } from "../libs/security";
 const authMiddleware = createMiddleware(async (c, next) => {
     if (
         c.req.path === "/api/v1/auth/login" ||
-        c.req.path === "/api/v1/auth/signup"
+        c.req.path === "/api/v1/auth/signup" ||
+        c.req.path === "/graphql"
     ) {
         return await next();
     }
