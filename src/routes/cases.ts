@@ -31,7 +31,7 @@ casesRouter.post("/", async (c) => {
 
 casesRouter.post("/:id/photos", async (c) => {
     const { id } = c.req.param();
-    const files = (await c.req.formData()).get("files");
+    const files = (await c.req.formData()).get("photos");
     await addPhotoToCase(+id, files as unknown as File[]);
     return c.json(files, 200);
 });
