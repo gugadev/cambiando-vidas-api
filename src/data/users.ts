@@ -4,6 +4,11 @@ import { prisma } from "../prisma/client";
 import { UpdateProfileDto, CreateUserDTO } from "../types/users";
 import { users } from "@prisma/client";
 
+type UserIncludeFields = {
+    roles?: boolean;
+    cases?: boolean;
+};
+
 async function createUser(
     dto: CreateUserDTO
 ): Promise<[Nullable<users>, Nullable<Error>]> {
@@ -55,9 +60,9 @@ function getUserByEmail(email: string) {
     });
 }
 
-function getUserById(id: number) {
+function getUserById(id: number, include: UserIncludeFields = { roles: true }) {
     return prisma.users.findUnique({
-        include: { roles: true },
+        include,
         where: { id },
     });
 }

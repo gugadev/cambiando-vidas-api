@@ -5,7 +5,8 @@ const rolesRouter = new Hono();
 
 rolesRouter.get("/", async (c) => {
     const roles = await getAllRoles();
-    return c.json(roles, 200);
+    const fileredRoles = roles.filter((role) => role.name !== "Administrador");
+    return c.json(fileredRoles, 200);
 });
 
 export { rolesRouter };

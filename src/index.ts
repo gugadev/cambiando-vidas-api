@@ -12,9 +12,9 @@ import {
     vaccinesRouter,
     authRouter,
 } from "./routes";
-import { authMiddleware } from "./middlewares/auth";
 import { schema, rootResolver } from "./graphql";
 import { env } from "./infra/env";
+import { allowedMiddleware } from "./middlewares/allowed";
 
 // @ts-expect-error BigInt is not defined in the global scope
 BigInt.prototype.toJSON = function () {
@@ -28,7 +28,7 @@ const app = new Hono<{ Variables: { user: users } }>();
 console.log("Env Vars:", env);
 
 app.use(logger());
-app.use(authMiddleware);
+app.use(allowedMiddleware);
 app.use(
     "*",
     cors({

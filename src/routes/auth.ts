@@ -20,7 +20,7 @@ authRouter.post("/login", async (c) => {
     const { email, password } = await c.req.json<LoginBody>();
     const user = await getUserByEmail(email);
     const match = user ? comparePasswords(password, user.password) : false;
-    if (!user || match) {
+    if (!user || !match) {
         return c.json({ error: "Usuario o contraseña incorrectas" }, 400);
     }
     const token = await createToken(user);

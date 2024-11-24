@@ -4,12 +4,14 @@ import { users } from "@prisma/client";
 import { UpdateProfileDto } from "../types/users";
 import { uploadImageToSupabase } from "../supabase/storage";
 import { env } from "../infra/env";
+import { authMiddleware } from "../middlewares/auth";
 
 const usersRouter = new Hono<{ Variables: { user: users } }>();
 
-usersRouter.get("/me", (c) => {
+usersRouter.get("/me", authMiddleware, async (c) => {
     const user = c.get("user");
-    return c.json(user, 200);
+    const userWithIncludedFields = await getUserById(Number(user.id));
+    return c.json(userWithIncludedFields, 200);
 });
 
 usersRouter.get("/:id", async (c) => {
@@ -24,10 +26,17 @@ usersRouter.get("/:id", async (c) => {
     return c.json(userFound, 200);
 });
 
-usersRouter.put("/:id", async (c) => {
+usersRouter.put("/:id", authMiddleware, async (c) => {
     const { id } = c.req.param();
     if (!id || Number.isNaN(id)) {
         return c.json({ message: "ID de usuario inválido" }, 400);
+    }
+    // Validate if the user is updating its own profile
+    if (Number(c.get("user").id) !== +id) {
+        return c.json(
+            { message: "No tienes permisos para actualizar la foto" },
+            403
+        );
     }
     const body = await c.req.json<UpdateProfileDto>();
     const userFound = await getUserById(+id);
@@ -38,13 +47,20 @@ usersRouter.put("/:id", async (c) => {
     return c.json(updatedUser, 200);
 });
 
-usersRouter.put("/:id/photo", async (c) => {
+usersRouter.put("/:id/photo", authMiddleware, async (c) => {
     const { id } = c.req.param();
     if (!id || Number.isNaN(id)) {
         return c.json({ message: "ID de usuario inválido" }, 400);
     }
+    // Validate if the user is updating its own profile
+    if (Number(c.get("user").id) !== +id) {
+        return c.json(
+            { message: "No tienes permisos para actualizar la foto" },
+            403
+        );
+    }
     const formData = await c.req.formData();
-    const photo = await formData.get("photo");
+    const photo = formData.get("photo");
     if (!photo) {
         return c.json({ message: "No se encontró la foto" }, 400);
     }
@@ -71,6 +87,9 @@ usersRouter.put("/:id/photo", async (c) => {
     };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, updateErr] = await updateProfile(dto, +id);
+    if (updateErr) {
+        c.json({ message: "Ocurrió un error al actualizar la foto" }, 500);
+    }
     return c.json({ photoUrl: uploadedPhoto!.fullPath }, 200);
 });
 
