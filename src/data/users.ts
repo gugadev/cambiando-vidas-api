@@ -3,6 +3,7 @@ import { env } from "../infra/env";
 import { prisma } from "../prisma/client";
 import { UpdateProfileDto, CreateUserDTO } from "../types/users";
 import { users } from "@prisma/client";
+import { uploadImageToSupabase } from "../supabase/storage";
 
 type UserIncludeFields = {
     roles?: boolean;
@@ -41,11 +42,32 @@ async function updateProfile(
         if (dto.email) data["email"] = dto.email;
         if (dto.about) data["about"] = dto.about;
         if (dto.password) data["password"] = hashPassword(dto.password);
-        if (dto.photo) data["photo_url"] = dto.photo;
 
         const user = await prisma.users.update({
             where: { id },
             data,
+        });
+        return [user, null];
+    } catch (err) {
+        return [null, err as Error];
+    }
+}
+
+async function updateProfilePhoto(
+    photo: File,
+    id: number
+): Promise<[Nullable<users>, Nullable<Error>] | [null, string]> {
+    try {
+        const [uploadedPhoto, err] = await uploadImageToSupabase(
+            env.supabaseProfileImagesBucket,
+            photo as File
+        );
+        if (err) {
+            return [null, "Ocurrió un error al actualizar la foto"];
+        }
+        const user = await prisma.users.update({
+            where: { id },
+            data: { photo_url: uploadedPhoto!.fullPath },
         });
         return [user, null];
     } catch (err) {
@@ -67,4 +89,10 @@ function getUserById(id: number, include: UserIncludeFields = { roles: true }) {
     });
 }
 
-export { createUser, updateProfile, getUserByEmail, getUserById };
+export {
+    createUser,
+    updateProfile,
+    updateProfilePhoto,
+    getUserByEmail,
+    getUserById,
+};

@@ -46,9 +46,20 @@ casesRouter.post("/:id/photos", authMiddleware, async (c) => {
             403
         );
     }
-    const files = (await c.req.formData()).get("photos");
-    await addPhotoToCase(+id, files as unknown as File[]);
-    return c.json(files, 200);
+    const formData = await c.req.formData();
+    const photos = [
+        formData.get("photos-0") as Nullable<File>,
+        formData.get("photos-1") as Nullable<File>,
+        formData.get("photos-2") as Nullable<File>,
+        formData.get("photos-3") as Nullable<File>,
+    ].filter((photo) => photo !== null && photo !== undefined);
+    try {
+        await addPhotoToCase(+id, photos as unknown as File[]);
+        return c.json(true, 200);
+    } catch (error) {
+        console.error(error);
+        return c.json({ message: "Error al subir las fotos" }, 500);
+    }
 });
 
 casesRouter.get("/:id", async (c) => {

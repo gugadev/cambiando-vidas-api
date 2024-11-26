@@ -8,7 +8,7 @@ const authMiddleware = createMiddleware(async (c, next) => {
     }
     const isTokenValid = await checkToken(token);
     if (!isTokenValid) {
-        return c.text("Unauthorized", 401);
+        return c.text("Unauthorized: token expired or malformed", 401);
     }
     const user = await decodeToken(token);
     c.set("user", user);

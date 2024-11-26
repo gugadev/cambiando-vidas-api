@@ -30,11 +30,12 @@ function getCaseDetail(id: number) {
 async function createCase(
     data: CreateCaseDto & { rescuerId: number }
 ): Promise<[Nullable<cases>, Nullable<Error>]> {
+    const NO_BREED_ID = 41;
     try {
         const newCase = await prisma.cases.create({
             data: {
                 name: data.name,
-                breed_id: data.breedId,
+                breed_id: data.noBreed ? NO_BREED_ID : data.breedId,
                 age_months: data.ageMonths,
                 age_years: data.ageYears,
                 about: data.story,

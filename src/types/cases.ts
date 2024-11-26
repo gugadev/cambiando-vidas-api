@@ -7,6 +7,7 @@ interface CreateCaseDto {
     castrated: boolean;
     observations: string | null;
     vaccines: [];
+    noBreed?: boolean;
 }
 
 export { CreateCaseDto };

@@ -8,11 +8,10 @@ interface CreateUserDTO {
 }
 
 interface UpdateProfileDto {
-    phone: string | null;
-    email: string | null;
-    password: string | null;
+    phone: string;
+    email: string;
+    password?: string;
     about: string | null;
-    photo: string | null;
 }
 
 export type { CreateUserDTO, UpdateProfileDto };

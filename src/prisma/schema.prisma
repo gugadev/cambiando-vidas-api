@@ -74,9 +74,9 @@ model users {
   email           String    @unique
   password        String
   about           String?
-  photo_url       String?
+  photo_url       String
   is_organization Boolean   @default(false)
-  phone           String?
+  phone           String
   adoptions       cases[]   @relation("cases_adopter_idTousers")
   rescues         cases[]   @relation("cases_rescuer_idTousers")
   roles           roles     @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)

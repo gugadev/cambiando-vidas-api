@@ -1,9 +1,7 @@
 import { Hono } from "hono";
-import { getUserById, updateProfile } from "../data/users";
+import { getUserById, updateProfile, updateProfilePhoto } from "../data/users";
 import { users } from "@prisma/client";
 import { UpdateProfileDto } from "../types/users";
-import { uploadImageToSupabase } from "../supabase/storage";
-import { env } from "../infra/env";
 import { authMiddleware } from "../middlewares/auth";
 
 const usersRouter = new Hono<{ Variables: { user: users } }>();
@@ -43,7 +41,13 @@ usersRouter.put("/:id", authMiddleware, async (c) => {
     if (!userFound) {
         return c.json(null, 404);
     }
-    const updatedUser = await updateProfile(body, +id);
+    const [updatedUser, updateErr] = await updateProfile(body, +id);
+    if (updateErr) {
+        return c.json(
+            { message: "Ocurrió un error al actualizar el perfil" },
+            500
+        );
+    }
     return c.json(updatedUser, 200);
 });
 
@@ -61,36 +65,21 @@ usersRouter.put("/:id/photo", authMiddleware, async (c) => {
     }
     const formData = await c.req.formData();
     const photo = formData.get("photo");
+    // Validate if the photo exists
     if (!photo) {
         return c.json({ message: "No se encontró la foto" }, 400);
     }
     const userFound = await getUserById(+id);
+    // Validate if the user exists
     if (!userFound) {
         return c.json(null, 404);
     }
-    const [uploadedPhoto, err] = await uploadImageToSupabase(
-        env.supabaseProfileImagesBucket,
-        photo as File
-    );
-    if (err) {
-        return c.json(
-            { message: "Ocurrió un error al actualizar la foto" },
-            500
-        );
-    }
-    const dto: UpdateProfileDto = {
-        photo: uploadedPhoto!.fullPath,
-        phone: null,
-        about: null,
-        email: null,
-        password: null,
-    };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_, updateErr] = await updateProfile(dto, +id);
+    const [user, updateErr] = await updateProfilePhoto(photo as File, +id);
+    // Validate if there was an error updating the photo
     if (updateErr) {
         c.json({ message: "Ocurrió un error al actualizar la foto" }, 500);
     }
-    return c.json({ photoUrl: uploadedPhoto!.fullPath }, 200);
+    return c.json({ photoUrl: user!.photo_url }, 200);
 });
 
 export { usersRouter };
