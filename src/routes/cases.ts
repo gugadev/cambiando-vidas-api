@@ -19,6 +19,12 @@ casesRouter.get("/", async (c) => {
     return c.json(cases, 200);
 });
 
+casesRouter.get("/:id", async (c) => {
+    const { id } = c.req.param();
+    const caseDetail = await getCaseDetail(+id);
+    return c.json(caseDetail, 200);
+});
+
 casesRouter.post("/", authMiddleware, async (c) => {
     const { id } = c.get("user");
     const payload = await c.req.json<CreateCaseDto>();
@@ -60,12 +66,6 @@ casesRouter.post("/:id/photos", authMiddleware, async (c) => {
         console.error(error);
         return c.json({ message: "Error al subir las fotos" }, 500);
     }
-});
-
-casesRouter.get("/:id", async (c) => {
-    const { id } = c.req.param();
-    const caseDetail = await getCaseDetail(+id);
-    return c.json(caseDetail, 200);
 });
 
 export { casesRouter };

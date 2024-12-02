@@ -10,6 +10,7 @@ function getAllCases() {
             cases_photos: true,
             breeds: true,
             rescuer: true,
+            adopter: true,
         },
     });
 }
@@ -23,6 +24,7 @@ function getCaseDetail(id: number) {
             cases_photos: true,
             breeds: true,
             rescuer: true,
+            adopter: true,
         },
     });
 }
